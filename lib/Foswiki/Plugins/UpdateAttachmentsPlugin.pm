@@ -74,7 +74,7 @@ sub restUpdate {
                 Foswiki::Sandbox::sanitizeAttachmentName( $foundAttachment->{name} );
             #ignore filenames that would need to be renamed
             if ($fileName ne $origName) {
-                print STDERR "ERROR: UpdateAttachments: ignoring $origName, in $web.$topic - not a valid TWiki Attachment filename";
+                print STDERR "ERROR: UpdateAttachments: ignoring $origName, in $web.$topic - not a valid Foswiki Attachment filename";
                 $attachmentsIgnored++;
                 next;
             }
