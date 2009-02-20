@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="BaseUserMapping_333" date="1196135362" format="1.1" version="1.2"}%
+%META:TOPICINFO{author="BaseUserMapping_333" date="1235112764" format="1.1" version="1.2"}%
 
 <img src="%PUBURL%/%WEB%/%TOPIC%/wikiring-attach.png" style="float:right;padding:26px" />
 ---+!! !UpdateAttachmentsPlugin
@@ -68,3 +68,6 @@ __Related Topics:__ [[%SYSTEMWEB%.Plugins][Plugins]], %SYSTEMWEB%.DeveloperDocum
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. Please add comments/questions/remarks to the feedback topic on foswiki.org instead. -->
 
+
+%META:FILEATTACHMENT{name="wikiring-attach.png" attr="" autoattached="1" comment="" date="1235112224" path="wikiring-attach.png" size="34351" version=""}%
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="" autoattached="1" comment="" date="1235112224" path="wikiringlogo20x20.png" size="1343" version=""}%
