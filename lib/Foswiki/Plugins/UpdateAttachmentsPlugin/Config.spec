@@ -1,14 +1,12 @@
-#---++ Extensions
+#---+ Extensions
 #---++ Update Attachments Plugin
 # **STRING**
 # To attribute attachments to a known user, set this to their WikiName. This user should exist,
-# and be mappable to a login. 
+# and be mappable to a login.  If not set, the default UnknownUser will be used.
 $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser} = '';
 # **BOOLEAN**
-# remove references to attachments that no longer exist in pub
-$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = $FALSE;
+# Remove references to attachments that no longer exist in pub.
+$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = $TRUE;
 # **BOOLEAN**
-# use the _internal_ _noHandlersSave - This option causes the topic update code to write directly into the
-# Store, bypassing the API's and other Handlers.  This is *Strongly* not recommended.  This may break in 
-# future and is not recomended unless you know the code.
-$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{UseDangerousNoHandlersSave} = $FALSE;
+# Enable debugging messages - printed to STDERR (Apache error_log file)
+$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug} = $FALSE;
