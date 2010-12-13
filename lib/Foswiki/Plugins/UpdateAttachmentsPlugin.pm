@@ -17,7 +17,7 @@ package Foswiki::Plugins::UpdateAttachmentsPlugin;
 use strict;
 
 our $VERSION = '$Rev$';
-our $RELEASE = 'Foswiki-1.0';
+our $RELEASE = '2.0';
 our $SHORTDESCRIPTION =
   'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
@@ -41,10 +41,7 @@ sub initPlugin {
 
 sub restUpdate {
     my $session = shift;
-    my $store   = $session->{store};
     my $web     = $session->{webName};
-
-    print STDERR "update the attachments of $web\n" if $debug;
 
     #force autoattach off, as we need to know the real META
     my $cfgAutoAttach = $Foswiki::cfg{AutoAttachPubFiles};
@@ -62,24 +59,54 @@ sub restUpdate {
     my $attachmentsUpdated = 0;
     my $detailedReport     = '';
 
-    #TODO: test user's access to web (rest already tests for web CHANGE access)
+    my $webObject = Foswiki::Meta->new( $session, $web );
+    unless ($webObject->haveAccess('VIEW') && $webObject->haveAccess('CHANGE') ) {
+        print STDERR "Check for VIEW and CHANGE on $web web failed\n" if $debug;
+        $webObject->finish();
+        return "Access denied on $web web.  UpdateAttachments not possible\n";
+        }
+
+    if ($Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission}) {
+        unless ( $webObject->haveAccess('UPDATEATTACH') ) {
+            print STDERR "Check for UPDATEATTACH on $web web failed\n" if $debug;
+            $webObject->finish();
+            return "UPDATEATTACH permission denied on $web web.  UpdateAttachments not possible\n";
+        }
+    }
+
     my @topicNames = Foswiki::Func::getTopicList($web);
     foreach my $topic (@topicNames) {
+        print STDERR "===============  Processing $topic in $web ==============\n" if $debug;
         my $changed = 0;
-        my $topicObject = Foswiki::Meta->load( $session, $web, $topic );
 
-        if ( !$topicObject->haveAccess('CHANGE') ) {
+        my $topicObject = Foswiki::Meta->new( $session, $web, $topic );
+
+        # Change topic context so topic can override attributes of attachments in their settings
+        Foswiki::Func::pushTopicContext($web, $topic);
+
+        if (!$topicObject->haveAccess('VIEW')) {
             $detailedReport .=
-              "bypassed $web.$topic - no permission to change <br/>\n";
+              "bypassed $web.$topic - no permission to VIEW <br/>\n";
             $topicObject->finish();
             next;
         }
+
+        if (!$topicObject->haveAccess('CHANGE')) {
+            $detailedReport .=
+              "bypassed $web.$topic - no permission to CHANGE <br/>\n";
+            $topicObject->finish();
+            next;
+        }
+
+        $topicObject->loadVersion();
 
         my @knownAttachments = $topicObject->find('FILEATTACHMENT');
         my (
             $attachmentsFoundInPub,  $attachmentsRemovedFromMeta,
             $attachmentsAddedToMeta, $attachmentsUpdatedInMeta
         ) = synchroniseAttachmentsList( $topicObject, \@knownAttachments );
+
+        Foswiki::Func::popTopicContext();
 
         # @validAttachmentsFound will contain the replacment attachment Metadata
         my @validAttachmentsFound;
@@ -147,6 +174,9 @@ sub restUpdate {
 
     }
 
+    $webObject->finish();
+
+
     print STDERR
 "UpdateAttachments checked $topicsTested, updated $topicsUpdated,   removed $attachmentsRemoved attachments, $attachmentsIgnored ignored"
       if $debug;
@@ -202,7 +232,7 @@ sub synchroniseAttachmentsList {
             {
                 $filesListedInPub{$file}{autoattached} = "1";
                 push @filesUpdatedInMeta, $file;
-                print STDERR "Updating $file \n";
+                print STDERR "Updating $file \n" if $debug;
             }
 
             # Bring forward any missing yet wanted attribute
@@ -217,7 +247,7 @@ sub synchroniseAttachmentsList {
 
             #default attachment owner to {AttachAsUser}
             push @filesAddedToMeta, $file;
-            print STDERR "Adding $file \n";
+            print STDERR "Adding $file \n" if $debug;
             $filesListedInPub{$file}{autoattached} = "1";
             if (
                 (
@@ -231,9 +261,9 @@ sub synchroniseAttachmentsList {
               )
             {
                 $filesListedInPub{$file}{user} =
-                  $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser};
-
-   #TODO: needs testing for the generalised usermapping case - shoudl store cUID
+                  Foswiki::Func::getCanonicalUserID(
+                    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}
+                      {AttachAsUser} );
             }
         }
     }
