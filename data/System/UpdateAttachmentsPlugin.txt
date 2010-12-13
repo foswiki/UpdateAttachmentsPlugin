@@ -39,7 +39,6 @@ Or using a cronjob - make sure the cronjob is running as the same user as Foswik
 These settings are in the configure web interface in the <nop>Update Attachments Plugin section of [[%SCRIPTURL{configure}%][configure]].
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser}= - defaults to the unknown user. To reset the attributed user for attachments that already exist, =touch= the files in the attachment directory.
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing}= - will remove attachment references in a topic that no longer exist
-   * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{UseDangerousNoHandlersSave}= - use with extreme caution, _if_ you understand what the results of a no_handler save are, and _if_ you are able to recover your Foswiki if it fails.
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug}= - to see what topics are updated (edit LocalSite.cfg by hand to add this setting).
    
 It is recommended to disable $Foswiki::cfg{AutoAttachPubFiles}.
@@ -57,7 +56,9 @@ This plugin _may_ not function correctly if =$Foswiki::cfg{AutoAttachPubFiles}= 
 |  Attachment Icon | based on eXperience Crystal, by David Christian Berg |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL 3 (Gnu General Public License)]] |
 |  Plugin Version: | %$VERSION% |
+|  Plugin Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  2.0rc: | Foswikitask:Item9322 - Update for version 1.1 of Foswiki |
 | port to Foswiki : | Feb 2009 |
 |  add AttachAsUser: | December 2007 |
 |  initial release: | November 2007 |
