@@ -51,8 +51,8 @@ This plugin _may_ not function correctly if =$Foswiki::cfg{AutoAttachPubFiles}= 
 
 ---++ Plugin Info
 
-|  Plugin Author(s): | Foswiki:Main.SvenDowideit - http://fosiki.com a %PUBURL%/%WEB%/%TOPIC%/wikiringlogo20x20.png [[http://WikiRing.com][WikiRing]] founding partner  |
-|  Copyright: | &copy; SvenDowideit@fosiki.com |
+|  Plugin Author(s): | Foswiki:Main.SvenDowideit - http://fosiki.com a %PUBURL%/%WEB%/%TOPIC%/wikiringlogo20x20.png [[http://WikiRing.com][WikiRing]] founding partner  <br/> Foswiki:Main.GeorgeClark - revised for Foswiki 1.1 |
+|  Copyright: | &copy; 2008-2009 SvenDowideit@fosiki.com <br/> &copy; 2010 Foswiki Contributors |
 |  Attachment Icon | based on eXperience Crystal, by David Christian Berg |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL 3 (Gnu General Public License)]] |
 |  Plugin Version: | %$VERSION% |
