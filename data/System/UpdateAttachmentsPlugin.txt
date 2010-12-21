@@ -32,6 +32,7 @@ your user as permission to edit) - for example, to update the Sandbox web
 
 Or using a cronjob - make sure the cronjob is running as the same user as Foswiki's web access is
    * =./rest UpdateAttachmentsPlugin.update topic Sandbox.WebHome=
+   * =./rest /UpdateAttachmentsPlugin/update -topic Sandbox.WebHome -user AdminUser=
    
 (if you get a 500 or premature end of script error, chances are your current user does not have permission to change the web or topics)
 

@@ -26,7 +26,6 @@ sub set_up {
     my $webObject = Foswiki::Meta->new( $this->{session}, $this->{attach_web} );
     $webObject->populateNewWeb();
 
-#    Foswiki::Func::getContext()->{view} = 1;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Enabled} = 1;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug} = 0;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Module} = 'Foswiki::Plugins::UpdateAttachmentsPlugin';
@@ -83,9 +82,19 @@ sub _writeFile {
 
 # Attach a file to the web/topic
 sub _attachFile {
-    my ( $this, $web, $topic, $file, $text ) = @_;
+    my ( $web, $topic, $attach, $content ) = @_;
+    $content = "datadata/n" unless ($content);
 
-    return;
+    my $path = $Foswiki::cfg{TempfileDir};
+    open( my $fh, '>', "$path/$attach" )
+      or die "Unable to open $path/$attach for writing: $!\n";
+    print $fh "$content \n";
+    close($fh);
+
+    Foswiki::Func::saveAttachment( $web, $topic, $attach,
+                                    { file => "$path/$attach", 
+                                      comment => 'Picture of Health',
+                                      hide => 1 } );
 }
 
 sub _trim {
@@ -97,13 +106,12 @@ sub _trim {
 
 # Not a test, a helper.
 sub runREST {
-    my ( $this, $web, $topic ) = @_;
+    my ( $this, $topic ) = @_;
 
-    $web   ||= $this->{attach_web};
+    my $web   = $this->{attach_web};
     $topic ||= 'WebHome';
 
     my $url = Foswiki::Func::getScriptUrl( 'UpdateAttachmentsPlugin', 'update', 'rest' );
-
 
     # Compose the query
     my $query = Unit::Request->new(
@@ -119,11 +127,16 @@ sub runREST {
     # invoke the save handler
     my ($resp) = $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
 
-    print STDERR "RESPONSE:  $resp";
+    #print STDERR "RESPONSE:  $resp";
+    return $resp;
 
 }
 
-sub test_SimpleRest {
+#
+#   Verify that a file is attached on the first run
+#   and is not attached on a 2nd run.
+#
+sub test_SimpleAttachment {
     my $this = shift;
 
     my $web = $this->{attach_web};
@@ -132,16 +145,143 @@ sub test_SimpleRest {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', 'SomeFile');  
+    _writeFile( $web, 'AnotherTopic', 'SomeFile');
 
-    $this->runREST( undef, undef);
-    $this->runREST( undef, undef);
+    # first run - attach one file.
 
+    my $resp = $this->runREST( 'WebHome' );
+
+    my $match = <<"HERE";
+Attachments updated 0, added 1, removed 0, ignored 0 <br/><br/>
+Updating $web.AnotherTopic <br/>
+Added SomeFile <br/>
+HERE
+
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+    $resp = $this->runREST( 'WebHome' );
+    $match = <<"HERE";
+Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
+HERE
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+}
+
+#
+#   Verify removing all attachments
+#
+sub test_removeAllAttach {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _attachFile( $web, 'AnotherTopic', 'SomeFile');
+
+    unlink  "$Foswiki::cfg{PubDir}/$web/AnotherTopic/SomeFile";
+
+    my $resp = $this->runREST( 'WebHome' );
+
+    my $match = <<"HERE";
+Attachments updated 0, added 0, removed 1, ignored 0 <br/><br/>
+Updating $web.AnotherTopic <br/>
+Removed SomeFile <br/>
+HERE
+
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+    # Run tes a 2nd time - nothing to remove.
+    $resp = $this->runREST( 'WebHome' );
+
+    $match = <<"HERE";
+Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
+HERE
+
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+}
+
+#
+#   Verify that a bad attachment name is not attached,
+#   and is reported as being ignored.
+#
+sub test_badAttachment {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _writeFile( $web, 'AnotherTopic', 'bad # file @ name');
+
+    my $resp = $this->runREST( 'WebHome' );
+
+    my $match = <<"HERE";
+UpdateAttachments Topics checked 2, updated 0, <br/> 
+Attachments updated 0, added 0, removed 0, ignored 1 <br/><br/>
+AutoAttachPubFiles ignoring "bad # file @ name" in $web.AnotherTopic - not a valid Foswiki Attachment filename<br/>
+HERE
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+}
+
+#
+#   Verify that a file is attached on the first run
+#   and is not attached on a 2nd run.
+#
+sub test_verifyAttachMetadata {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _attachFile( $web, 'AnotherTopic', 'EightBytes', "88888888");
+    _attachFile( $web, 'AnotherTopic', 'FourBytes', "4444");
+
+    my ($meta, $text) = Foswiki::Func::readTopic( $web, 'AnotherTopic');
     return;
+
+
+    my $resp = $this->runREST( 'WebHome' );
+
+    my $match = <<"HERE";
+Attachments updated 0, added 1, removed 0, ignored 0 <br/><br/>
+Updating $web.AnotherTopic <br/>
+Added SomeFile <br/>
+HERE
+
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+    $resp = $this->runREST( 'WebHome' );
+    $match = <<"HERE";
+Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
+HERE
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 }
 
 
-
+#  Test updating an attachment and verify size recorded in Metadata
+#
+#  Test that view and change auth are honored
+#
+#  Test 4 options together,  add, update, remove, ignored
+#
+#  Test Attach as user & verify metadata
+#
+#  Test removing all attachments 
+#
 
 1;
 __END__

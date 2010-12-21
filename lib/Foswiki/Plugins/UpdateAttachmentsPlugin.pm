@@ -88,7 +88,8 @@ sub restUpdate {
         my @knownAttachments = $topicObject->find('FILEATTACHMENT');
         my (
             $attachmentsFoundInPub,  $attachmentsRemovedFromMeta,
-            $attachmentsAddedToMeta, $attachmentsUpdatedInMeta
+            $attachmentsAddedToMeta, $attachmentsUpdatedInMeta,
+            $badAttachments
         ) = synchroniseAttachmentsList( $topicObject, \@knownAttachments );
 
         Foswiki::Func::popTopicContext();
@@ -97,28 +98,11 @@ sub restUpdate {
         my @validAttachmentsFound;
 
         foreach my $foundAttachment (@$attachmentsFoundInPub) {
-
-            # test if the attachment filename is valid without having to
-            # be sanitized. If not, ignore it.
-            my $validated = Foswiki::Sandbox::validateAttachmentName(
-                $foundAttachment->{name} );
-            unless ( defined $validated
-                && $validated eq $foundAttachment->{name} )
-            {
-
-                $detailedReport .=
-                    'AutoAttachPubFiles ignoring '
-                  . $foundAttachment->{name} . ' in '
-                  . $topicObject->getPath()
-                  . ' - not a valid Foswiki Attachment filename';
-            }
-            else {
-                push @validAttachmentsFound, $foundAttachment;
-            }
+            push @validAttachmentsFound, $foundAttachment;
         }
 
         $topicObject->putAll( 'FILEATTACHMENT', @validAttachmentsFound )
-          if @validAttachmentsFound;
+          if (@validAttachmentsFound || scalar @$attachmentsRemovedFromMeta);
 
         #TODO: actually test that they are the same! (update size, date etc)
         print STDERR "$web.$topic has "
@@ -151,6 +135,14 @@ sub restUpdate {
             foreach my $attach (@$attachmentsUpdatedInMeta) {
                 $detailedReport .= "Updated $attach <br/>";
             }
+
+        }
+        foreach my $attach (@$badAttachments) {
+            $attachmentsIgnored++;
+            $detailedReport .=
+                'AutoAttachPubFiles ignoring '
+              . "\"$attach\" in $web.$topic"
+              . ' - not a valid Foswiki Attachment filename<br/>'."\n";
         }
         $topicsTested++;
         $topicObject->finish();
@@ -200,6 +192,7 @@ sub synchroniseAttachmentsList {
     my @filesRemovedFromMeta = ();
     my @filesAddedToMeta     = ();
     my @filesUpdatedInMeta   = ();
+    my @badAttachments       = ();
 
     # You need the following lines if you want metadata to supplement
     # the filesystem
@@ -209,6 +202,15 @@ sub synchroniseAttachmentsList {
     }
 
     foreach my $file ( keys %filesListedInPub ) {
+        my $validated = Foswiki::Sandbox::validateAttachmentName(
+            $file );
+        unless ( defined $validated
+            && $validated eq $file )
+        {
+            push @badAttachments, $file;
+            next;
+        }
+
         if ( $filesListedInMeta{$file} ) {
             if ( $filesListedInMeta{$file}{size} ne
                    $filesListedInPub{$file}{size}
@@ -258,6 +260,11 @@ sub synchroniseAttachmentsList {
 
     foreach my $file ( keys %filesListedInMeta ) {
         if ( !$filesListedInPub{$file} ) {
+            my $validated = Foswiki::Sandbox::validateAttachmentName(
+                $file );
+            next unless ( defined $validated
+                && $validated eq $file );
+
             if (
                 $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} )
             {
@@ -276,7 +283,7 @@ sub synchroniseAttachmentsList {
     my @deindexedBecauseMetaDoesnotIndexAttachments = values(%filesListedInPub);
 
     return \@deindexedBecauseMetaDoesnotIndexAttachments,
-      \@filesRemovedFromMeta, \@filesAddedToMeta, \@filesUpdatedInMeta;
+      \@filesRemovedFromMeta, \@filesAddedToMeta, \@filesUpdatedInMeta, \@badAttachments;
 }
 
 =begin TML
