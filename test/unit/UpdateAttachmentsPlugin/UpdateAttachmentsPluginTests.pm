@@ -32,6 +32,7 @@ sub set_up {
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser} = '';
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = 1;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission} = 1;
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} = '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';
 
     $this->{tmpdatafile8}  = $Foswiki::cfg{TempfileDir} . '/eight.bytes';
     $this->{tmpdatafile16}  = $Foswiki::cfg{TempfileDir} . '/sixteen.bytes';
@@ -125,7 +126,9 @@ sub runREST {
     my $text = "Ignore this text";
 
     # invoke the save handler
-    my ($resp) = $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
+    my ( $resp, $result, $stdout, $stderr ) = $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
+
+    #print STDERR "$stderr\n";
 
     #print STDERR "RESPONSE:  $resp";
     return $resp;
@@ -234,6 +237,80 @@ HERE
 }
 
 #
+#   Verify that a internal attachment name is not attached,
+#   and is not reported as ignored.  (Don't expose existance of operational files like .htpasswd
+#
+sub test_internalAttachment {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _writeFile( $web, 'AnotherTopic', '.htaccess');
+    _writeFile( $web, 'AnotherTopic', '.htpasswd');
+
+    my $resp = $this->runREST( 'WebHome' );
+    my $match = <<"HERE";
+UpdateAttachments Topics checked 2, updated 0, <br/> 
+Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
+HERE
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "internal files should not be attached" );
+
+}
+
+#
+#   Verify that a other "hidden" attachments are attached,
+#
+sub test_dotPrefixAttachments {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _writeFile( $web, 'AnotherTopic', '.bashrc');
+    _writeFile( $web, 'AnotherTopic', '.keep');
+
+    my $resp = $this->runREST( 'WebHome' );
+    my $match = <<"HERE";
+UpdateAttachments Topics checked 2, updated 1, <br/> 
+Attachments updated 0, added 2, removed 0, ignored 0 <br/><br/>
+HERE
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "internal files should not be attached" );
+
+}
+#
+#   Verify that a hidden attachment name is not attached,
+#   and is reported as being ignored.
+#
+sub test_hiddenAttachment {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AnotherTopic', <<HERE );
+Topic Text
+HERE
+
+    _writeFile( $web, 'AnotherTopic', '_hideMe.txt');
+
+    my $resp = $this->runREST( 'WebHome' );
+    my $match = <<"HERE";
+UpdateAttachments Topics checked 2, updated 0, <br/> 
+Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
+HERE
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "hidden files should not be attached" );
+
+}
+#
 #   Verify that a file is attached on the first run
 #   and is not attached on a 2nd run.
 #
@@ -281,6 +358,8 @@ HERE
 #  Test Attach as user & verify metadata
 #
 #  Test removing all attachments 
+#
+#  Test valid prefixed attachments, .bashrc for example
 #
 
 1;

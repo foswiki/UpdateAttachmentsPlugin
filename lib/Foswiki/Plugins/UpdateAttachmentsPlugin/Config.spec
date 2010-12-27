@@ -13,3 +13,10 @@ $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = $TRUE;
 # **BOOLEAN**
 # Enable debugging messages - printed to STDERR (Apache error_log file)
 $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug} = $FALSE;
+# **REGEX EXPERT**
+# Filter-in regex for attached file names. This is a filter
+# <b>in</b>, so any files that match this filter in the directory will be 
+# ignored.  Any files actively affecting the server configuration should be include in this
+# regular expression.   Files starting with underscore have been traditionally hidden by
+# Foswiki.  RCS files (,v) will never be auto-attached.
+$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} = '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';

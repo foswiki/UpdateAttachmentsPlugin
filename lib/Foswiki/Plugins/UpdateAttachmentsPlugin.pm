@@ -300,9 +300,11 @@ sub getAttachmentList {
         "$Foswiki::cfg{PubDir}/"
       . $topicObject->web() . "/"
       . $topicObject->topic();
+    my $attachFilter = qr/$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter}/;
+    print STDERR "FILTER:  $attachFilter\n";
     my $dh;
     opendir( $dh, $dir ) || return ();
-    my @files = grep { !/^[.*_]/ && !/,v$/ } readdir($dh);
+    my @files = grep { !/$attachFilter/ && !/,v$/ && -f "$dir/$_"} readdir($dh);
     closedir($dh);
     return @files;
 }
