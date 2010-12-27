@@ -253,7 +253,6 @@ HERE
     _writeFile( $web, 'AnotherTopic', '.htpasswd');
 
     my $resp = $this->runREST( 'WebHome' );
-    print STDERR "\n\n($resp)\n\n";
     my $match = <<"HERE";
 UpdateAttachments Topics checked 2, updated 0, <br/> 
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
