@@ -2,7 +2,7 @@ package Foswiki::Plugins::UpdateAttachmentsPlugin;
 use strict;
 
 our $VERSION = '$Rev$';
-our $RELEASE = '2.0rc2';
+our $RELEASE = '2.0';
 our $SHORTDESCRIPTION =
   'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
