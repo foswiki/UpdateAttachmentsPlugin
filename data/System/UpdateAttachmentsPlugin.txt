@@ -59,6 +59,7 @@ This plugin _may_ not function correctly if =$Foswiki::cfg{AutoAttachPubFiles}= 
 |  Plugin Version: | %$VERSION% |
 |  Plugin Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  2.0.2:  |  Foswikitask:Item10630: Config.spec really is necessary |
 |  2.0.1:  |  Foswikitask:Item10630: remove unnecessary files from manifest |
 |  2.0:  |  Foswikitask:Item10196: correctly handle dot prefixed files |
 |  2.0rc: | Foswikitask:Item9322: Update for version 1.1 of Foswiki |
