@@ -45,38 +45,46 @@ sub restUpdate {
     my $detailedReport     = '';
 
     my $webObject = Foswiki::Meta->new( $session, $web );
-    unless ($webObject->haveAccess('VIEW') && $webObject->haveAccess('CHANGE') ) {
+    unless ( $webObject->haveAccess('VIEW')
+        && $webObject->haveAccess('CHANGE') )
+    {
         print STDERR "Check for VIEW and CHANGE on $web web failed\n" if $debug;
         $webObject->finish();
         return "Access denied on $web web.  UpdateAttachments not possible\n";
-        }
+    }
 
-    if ($Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission}) {
+    if ( $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}
+        {CheckUPDATEATACHPermission} )
+    {
         unless ( $webObject->haveAccess('UPDATEATTACH') ) {
-            print STDERR "Check for UPDATEATTACH on $web web failed\n" if $debug;
+            print STDERR "Check for UPDATEATTACH on $web web failed\n"
+              if $debug;
             $webObject->finish();
-            return "UPDATEATTACH permission denied on $web web.  UpdateAttachments not possible\n";
+            return
+"UPDATEATTACH permission denied on $web web.  UpdateAttachments not possible\n";
         }
     }
 
     my @topicNames = Foswiki::Func::getTopicList($web);
     foreach my $topic (@topicNames) {
-        print STDERR "===============  Processing $topic in $web ==============\n" if $debug;
+        print STDERR
+          "===============  Processing $topic in $web ==============\n"
+          if $debug;
         my $changed = 0;
 
         my $topicObject = Foswiki::Meta->new( $session, $web, $topic );
 
-        # Change topic context so topic can override attributes of attachments in their settings
-        Foswiki::Func::pushTopicContext($web, $topic);
+# Change topic context so topic can override attributes of attachments in their settings
+        Foswiki::Func::pushTopicContext( $web, $topic );
 
-        if (!$topicObject->haveAccess('VIEW')) {
+        if ( !$topicObject->haveAccess('VIEW') ) {
             $detailedReport .=
               "bypassed $web.$topic - no permission to VIEW <br/>\n";
             $topicObject->finish();
             next;
         }
 
-        if (!$topicObject->haveAccess('CHANGE')) {
+        if ( !$topicObject->haveAccess('CHANGE') ) {
             $detailedReport .=
               "bypassed $web.$topic - no permission to CHANGE <br/>\n";
             $topicObject->finish();
@@ -102,7 +110,7 @@ sub restUpdate {
         }
 
         $topicObject->putAll( 'FILEATTACHMENT', @validAttachmentsFound )
-          if (@validAttachmentsFound || scalar @$attachmentsRemovedFromMeta);
+          if ( @validAttachmentsFound || scalar @$attachmentsRemovedFromMeta );
 
         #TODO: actually test that they are the same! (update size, date etc)
         print STDERR "$web.$topic has "
@@ -142,7 +150,7 @@ sub restUpdate {
             $detailedReport .=
                 'AutoAttachPubFiles ignoring '
               . "\"$attach\" in $web.$topic"
-              . ' - not a valid Foswiki Attachment filename<br/>'."\n";
+              . ' - not a valid Foswiki Attachment filename<br/>' . "\n";
         }
         $topicsTested++;
         $topicObject->finish();
@@ -152,7 +160,6 @@ sub restUpdate {
     }
 
     $webObject->finish();
-
 
     print STDERR
 "UpdateAttachments checked $topicsTested, updated $topicsUpdated,   removed $attachmentsRemoved attachments, $attachmentsIgnored ignored"
@@ -202,8 +209,7 @@ sub synchroniseAttachmentsList {
     }
 
     foreach my $file ( keys %filesListedInPub ) {
-        my $validated = Foswiki::Sandbox::validateAttachmentName(
-            $file );
+        my $validated = Foswiki::Sandbox::validateAttachmentName($file);
         unless ( defined $validated
             && $validated eq $file )
         {
@@ -260,8 +266,7 @@ sub synchroniseAttachmentsList {
 
     foreach my $file ( keys %filesListedInMeta ) {
         if ( !$filesListedInPub{$file} ) {
-            my $validated = Foswiki::Sandbox::validateAttachmentName(
-                $file );
+            my $validated = Foswiki::Sandbox::validateAttachmentName($file);
             next unless ( defined $validated
                 && $validated eq $file );
 
@@ -283,7 +288,8 @@ sub synchroniseAttachmentsList {
     my @deindexedBecauseMetaDoesnotIndexAttachments = values(%filesListedInPub);
 
     return \@deindexedBecauseMetaDoesnotIndexAttachments,
-      \@filesRemovedFromMeta, \@filesAddedToMeta, \@filesUpdatedInMeta, \@badAttachments;
+      \@filesRemovedFromMeta, \@filesAddedToMeta, \@filesUpdatedInMeta,
+      \@badAttachments;
 }
 
 =begin TML
@@ -300,10 +306,12 @@ sub getAttachmentList {
         "$Foswiki::cfg{PubDir}/"
       . $topicObject->web() . "/"
       . $topicObject->topic();
-    my $attachFilter = qr/$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter}/;
+    my $attachFilter =
+      qr/$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter}/;
     my $dh;
     opendir( $dh, $dir ) || return ();
-    my @files = grep { !/$attachFilter/ && !/,v$/ && -f "$dir/$_"} readdir($dh);
+    my @files =
+      grep { !/$attachFilter/ && !/,v$/ && -f "$dir/$_" } readdir($dh);
     closedir($dh);
     return @files;
 }
