@@ -223,7 +223,7 @@ sub synchroniseAttachmentsList {
             }
 
             # Bring forward any missing yet wanted attribute
-            foreach my $field qw(comment attr user version autoattached) {
+            foreach my $field (qw(comment attr user version autoattached)) {
                 if ( $filesListedInMeta{$file}{$field} ) {
                     $filesListedInPub{$file}{$field} =
                       $filesListedInMeta{$file}{$field};
