@@ -22,24 +22,21 @@ sub set_up {
 
     $this->SUPER::set_up();
 
-    $this->{attach_web} = "$this->{test_web}Attach";
+    $this->{attach_web}   = "$this->{test_web}Attach";
     my $webObject = Foswiki::Meta->new( $this->{session}, $this->{attach_web} );
     $webObject->populateNewWeb();
 
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Enabled} = 1;
-    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug}   = 0;
-    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Module} =
-      'Foswiki::Plugins::UpdateAttachmentsPlugin';
-    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser}  = '';
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug} = 0;
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Module} = 'Foswiki::Plugins::UpdateAttachmentsPlugin';
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser} = '';
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = 1;
-    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}
-      {CheckUPDATEATACHPermission} = 1;
-    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} =
-      '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission} = 1;
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} = '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';
 
     $this->{tmpdatafile8}  = $Foswiki::cfg{TempfileDir} . '/eight.bytes';
-    $this->{tmpdatafile16} = $Foswiki::cfg{TempfileDir} . '/sixteen.bytes';
-    $this->{tmpdatafile32} = $Foswiki::cfg{TempfileDir} . '/thirtytwo.bytes';
+    $this->{tmpdatafile16}  = $Foswiki::cfg{TempfileDir} . '/sixteen.bytes';
+    $this->{tmpdatafile32}  = $Foswiki::cfg{TempfileDir} . '/thirtytwo.bytes';
     $this->{tmpdatafilex}  = $Foswiki::cfg{TempfileDir} . '/bad # file @ name';
 
     return;
@@ -70,7 +67,7 @@ sub _writeTopic {
 
 # Save an attachment into the web/topic
 sub _writeFile {
-    my ( $web, $topic, $attach, $content ) = @_;
+    my ($web, $topic, $attach, $content) = @_;
 
     $content = "datadata/n" unless ($content);
 
@@ -95,14 +92,10 @@ sub _attachFile {
     print $fh "$content \n";
     close($fh);
 
-    Foswiki::Func::saveAttachment(
-        $web, $topic, $attach,
-        {
-            file    => "$path/$attach",
-            comment => 'Picture of Health',
-            hide    => 1
-        }
-    );
+    Foswiki::Func::saveAttachment( $web, $topic, $attach,
+                                    { file => "$path/$attach", 
+                                      comment => 'Picture of Health',
+                                      hide => 1 } );
 }
 
 sub _trim {
@@ -111,26 +104,29 @@ sub _trim {
     return $s;
 }
 
+
 # Not a test, a helper.
 sub runREST {
     my ( $this, $topic ) = @_;
 
-    my $web = $this->{attach_web};
+    my $web   = $this->{attach_web};
     $topic ||= 'WebHome';
 
-    my $url = Foswiki::Func::getScriptUrl( 'UpdateAttachmentsPlugin', 'update',
-        'rest' );
+    my $url = Foswiki::Func::getScriptUrl( 'UpdateAttachmentsPlugin', 'update', 'rest' );
 
     # Compose the query
-    my $query = Unit::Request->new( { 'topic' => "$web.$topic", } );
+    my $query = Unit::Request->new(
+        {
+            'topic'          => "$web.$topic",
+        }
+    );
     $query->path_info("/UpdateAttachmentsPlugin/update");
 
     my $session = Foswiki->new( $Foswiki::cfg{DefaultUserLogin}, $query );
     my $text = "Ignore this text";
 
     # invoke the save handler
-    my ( $resp, $result, $stdout, $stderr ) =
-      $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
+    my ( $resp, $result, $stdout, $stderr ) = $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
 
     #print STDERR "$stderr\n";
 
@@ -152,11 +148,11 @@ sub test_SimpleAttachment {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', 'SomeFile' );
+    _writeFile( $web, 'AnotherTopic', 'SomeFile');
 
     # first run - attach one file.
 
-    my $resp = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
 
     my $match = <<"HERE";
 Attachments updated 0, added 1, removed 0, ignored 0 <br/><br/>
@@ -165,15 +161,13 @@ Added SomeFile <br/>
 HERE
 
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 
-    $resp  = $this->runREST('WebHome');
+    $resp = $this->runREST( 'WebHome' );
     $match = <<"HERE";
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
 HERE
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 }
 
 #
@@ -188,11 +182,11 @@ sub test_removeAllAttach {
 Topic Text
 HERE
 
-    _attachFile( $web, 'AnotherTopic', 'SomeFile' );
+    _attachFile( $web, 'AnotherTopic', 'SomeFile');
 
-    unlink "$Foswiki::cfg{PubDir}/$web/AnotherTopic/SomeFile";
+    unlink  "$Foswiki::cfg{PubDir}/$web/AnotherTopic/SomeFile";
 
-    my $resp = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
 
     my $match = <<"HERE";
 Attachments updated 0, added 0, removed 1, ignored 0 <br/><br/>
@@ -201,19 +195,17 @@ Removed SomeFile <br/>
 HERE
 
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 
     # Run tes a 2nd time - nothing to remove.
-    $resp = $this->runREST('WebHome');
+    $resp = $this->runREST( 'WebHome' );
 
     $match = <<"HERE";
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
 HERE
 
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 
 }
 
@@ -230,9 +222,9 @@ sub test_badAttachment {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', 'bad # file @ name' );
+    _writeFile( $web, 'AnotherTopic', 'bad # file @ name');
 
-    my $resp = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
 
     my $match = <<"HERE";
 UpdateAttachments Topics checked 2, updated 0, <br/> 
@@ -240,8 +232,7 @@ Attachments updated 0, added 0, removed 0, ignored 1 <br/><br/>
 AutoAttachPubFiles ignoring "bad # file @ name" in $web.AnotherTopic - not a valid Foswiki Attachment filename<br/>
 HERE
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 
 }
 
@@ -258,17 +249,16 @@ sub test_internalAttachment {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', '.htaccess' );
-    _writeFile( $web, 'AnotherTopic', '.htpasswd' );
+    _writeFile( $web, 'AnotherTopic', '.htaccess');
+    _writeFile( $web, 'AnotherTopic', '.htpasswd');
 
-    my $resp  = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
     my $match = <<"HERE";
 UpdateAttachments Topics checked 2, updated 0, <br/> 
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
 HERE
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "internal files should not be attached" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "internal files should not be attached" );
 
 }
 
@@ -284,20 +274,18 @@ sub test_dotPrefixAttachments {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', '.bashrc' );
-    _writeFile( $web, 'AnotherTopic', '.keep' );
+    _writeFile( $web, 'AnotherTopic', '.bashrc');
+    _writeFile( $web, 'AnotherTopic', '.keep');
 
-    my $resp  = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
     my $match = <<"HERE";
 UpdateAttachments Topics checked 2, updated 1, <br/> 
 Attachments updated 0, added 2, removed 0, ignored 0 <br/><br/>
 HERE
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "internal files should not be attached" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "internal files should not be attached" );
 
 }
-
 #
 #   Verify that a hidden attachment name is not attached,
 #   and is reported as being ignored.
@@ -311,19 +299,17 @@ sub test_hiddenAttachment {
 Topic Text
 HERE
 
-    _writeFile( $web, 'AnotherTopic', '_hideMe.txt' );
+    _writeFile( $web, 'AnotherTopic', '_hideMe.txt');
 
-    my $resp  = $this->runREST('WebHome');
+    my $resp = $this->runREST( 'WebHome' );
     my $match = <<"HERE";
 UpdateAttachments Topics checked 2, updated 0, <br/> 
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
 HERE
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "hidden files should not be attached" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "hidden files should not be attached" );
 
 }
-
 #
 #   Verify that a file is attached on the first run
 #   and is not attached on a 2nd run.
@@ -337,13 +323,14 @@ sub test_verifyAttachMetadata {
 Topic Text
 HERE
 
-    _attachFile( $web, 'AnotherTopic', 'EightBytes', "88888888" );
-    _attachFile( $web, 'AnotherTopic', 'FourBytes',  "4444" );
+    _attachFile( $web, 'AnotherTopic', 'EightBytes', "88888888");
+    _attachFile( $web, 'AnotherTopic', 'FourBytes', "4444");
 
-    my ( $meta, $text ) = Foswiki::Func::readTopic( $web, 'AnotherTopic' );
+    my ($meta, $text) = Foswiki::Func::readTopic( $web, 'AnotherTopic');
     return;
 
-    my $resp = $this->runREST('WebHome');
+
+    my $resp = $this->runREST( 'WebHome' );
 
     my $match = <<"HERE";
 Attachments updated 0, added 1, removed 0, ignored 0 <br/><br/>
@@ -352,16 +339,15 @@ Added SomeFile <br/>
 HERE
 
     chomp $match;
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 
-    $resp  = $this->runREST('WebHome');
+    $resp = $this->runREST( 'WebHome' );
     $match = <<"HERE";
 Attachments updated 0, added 0, removed 0, ignored 0 <br/><br/>
 HERE
-    $this->assert_matches( qr#.*$match.*#, $resp,
-        "Unexpected output from initial attach" );
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 }
+
 
 #  Test updating an attachment and verify size recorded in Metadata
 #
@@ -371,7 +357,7 @@ HERE
 #
 #  Test Attach as user & verify metadata
 #
-#  Test removing all attachments
+#  Test removing all attachments 
 #
 #  Test valid prefixed attachments, .bashrc for example
 #
