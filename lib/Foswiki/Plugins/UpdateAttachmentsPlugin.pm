@@ -1,8 +1,9 @@
 package Foswiki::Plugins::UpdateAttachmentsPlugin;
 use strict;
+use warnings;
 
-our $VERSION = '$Rev$';
-our $RELEASE = '2.0.3';
+our $VERSION = '2.04';
+our $RELEASE = '2.04';
 our $SHORTDESCRIPTION =
   'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
@@ -20,13 +21,16 @@ sub initPlugin {
     }
 
     $debug = $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug} || 0;
-    Foswiki::Func::registerRESTHandler( 'update', \&restUpdate );
+    Foswiki::Func::registerRESTHandler( 'update', \&restUpdate,
+      authenticate => 1
+    );
     return 1;
 }
 
 sub restUpdate {
-    my $session = shift;
-    my $web     = $session->{webName};
+    my ($session, $plugin, $verb, $response) = @_;
+
+    my $web = $session->{webName};
 
     #force autoattach off, as we need to know the real META
     my $cfgAutoAttach = $Foswiki::cfg{AutoAttachPubFiles};
@@ -79,14 +83,14 @@ sub restUpdate {
 
         if ( !$topicObject->haveAccess('VIEW') ) {
             $detailedReport .=
-              "bypassed $web.$topic - no permission to VIEW <br/>\n";
+              "bypassed $web.$topic - no permission to VIEW\n";
             $topicObject->finish();
             next;
         }
 
         if ( !$topicObject->haveAccess('CHANGE') ) {
             $detailedReport .=
-              "bypassed $web.$topic - no permission to CHANGE <br/>\n";
+              "bypassed $web.$topic - no permission to CHANGE\n";
             $topicObject->finish();
             next;
         }
@@ -133,15 +137,15 @@ sub restUpdate {
             $attachmentsAdded   += scalar(@$attachmentsAddedToMeta);
             $attachmentsUpdated += scalar(@$attachmentsUpdatedInMeta);
 
-            $detailedReport .= "Updating $web.$topic <br/>\n";
+            $detailedReport .= "Updating $web.$topic\n";
             foreach my $attach (@$attachmentsRemovedFromMeta) {
-                $detailedReport .= "Removed $attach <br/>";
+                $detailedReport .= "Removed $attach\n";
             }
             foreach my $attach (@$attachmentsAddedToMeta) {
-                $detailedReport .= "Added $attach <br/>";
+                $detailedReport .= "Added $attach\n";
             }
             foreach my $attach (@$attachmentsUpdatedInMeta) {
-                $detailedReport .= "Updated $attach <br/>";
+                $detailedReport .= "Updated $attach\n";
             }
 
         }
@@ -150,7 +154,7 @@ sub restUpdate {
             $detailedReport .=
                 'AutoAttachPubFiles ignoring '
               . "\"$attach\" in $web.$topic"
-              . ' - not a valid Foswiki Attachment filename<br/>' . "\n";
+              . ' - not a valid Foswiki Attachment filename' . "\n";
         }
         $topicsTested++;
         $topicObject->finish();
@@ -168,9 +172,11 @@ sub restUpdate {
 # Restore auto-attach setting.   (This *really* ought to be disabled if using this plugin
     $Foswiki::cfg{AutoAttachPubFiles} = $cfgAutoAttach;
 
+    $response->header(-type => "text/plain");
+
     return <<HERE
-UpdateAttachments Topics checked $topicsTested, updated $topicsUpdated, <br/> 
-Attachments updated $attachmentsUpdated, added $attachmentsAdded, removed $attachmentsRemoved, ignored $attachmentsIgnored <br/><br/>
+UpdateAttachments Topics checked $topicsTested, updated $topicsUpdated, \n
+Attachments updated $attachmentsUpdated, added $attachmentsAdded, removed $attachmentsRemoved, ignored $attachmentsIgnored \n
 $detailedReport
 HERE
 }
@@ -306,8 +312,8 @@ sub getAttachmentList {
         "$Foswiki::cfg{PubDir}/"
       . $topicObject->web() . "/"
       . $topicObject->topic();
-    my $attachFilter =
-      qr/$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter}/;
+    my $attachFilter = $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} || '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';
+    $attachFilter = qr/$attachFilter/;
     my $dh;
     opendir( $dh, $dir ) || return ();
     my @files =
