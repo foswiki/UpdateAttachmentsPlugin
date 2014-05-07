@@ -1,6 +1,7 @@
-# Release manifest for UpdateAttachmentsPlugin
-data/System/UpdateAttachmentsPlugin.txt 0644 Documentation
-lib/Foswiki/Plugins/UpdateAttachmentsPlugin.pm 0644 Perl module
+data/System/UpdateAttachmentsPlugin.txt 0644
 lib/Foswiki/Plugins/UpdateAttachmentsPlugin/Config.spec 0644
-pub/System/UpdateAttachmentsPlugin/wikiringlogo20x20.png 0644
+lib/Foswiki/Plugins/UpdateAttachmentsPlugin/Core.pm 0644
+lib/Foswiki/Plugins/UpdateAttachmentsPlugin.pm 0644
 pub/System/UpdateAttachmentsPlugin/wikiring-attach.png 0644
+pub/System/UpdateAttachmentsPlugin/wikiringlogo20x20.png 0644
+test/unit/UpdateAttachmentsPlugin/UpdateAttachmentsPluginTests.pm 0644
