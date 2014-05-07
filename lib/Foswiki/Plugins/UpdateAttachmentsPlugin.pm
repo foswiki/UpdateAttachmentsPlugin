@@ -5,8 +5,8 @@ use warnings;
 use Foswiki::Plugins ();
 use Foswiki::Func ();
 
-our $VERSION = '3.00';
-our $RELEASE = '3.00';
+our $VERSION = '3.01';
+our $RELEASE = '3.01';
 our $SHORTDESCRIPTION = 'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
@@ -30,7 +30,7 @@ sub initPlugin {
     return 0;
   }
 
-  Foswiki::Func::registerRESTHandler('update', sub { core->restUpdate(@_) }, authenticate => 0);
+  Foswiki::Func::registerRESTHandler('update', sub { core->restUpdate(@_) }, authenticate => 1);
 
   #force autoattach off
   $Foswiki::cfg{AutoAttachPubFiles} = 0;

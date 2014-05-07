@@ -84,6 +84,7 @@ It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}=. The p
 | Plugin Version: | %$VERSION% |
 | Plugin Release: | %$RELEASE% |
 | Change History: | <!-- versions below in reverse order -->&nbsp; |
+| 3.01:   | Foswikitask:Item12839: require authentication when calling the REST handler |
 | 3.00:   | Foswikitask:Item12891: general code cleanup; added modes to update individual topics (Foswiki:Main.MichaelDaum); \
             Foswikitask:Item11844: exclude a few well known auto-generated attachments and thumnails |
 | 2.0.2:  | Foswikitask:Item10630: Config.spec really is necessary |
