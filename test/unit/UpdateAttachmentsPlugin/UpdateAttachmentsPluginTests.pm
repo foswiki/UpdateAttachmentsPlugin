@@ -15,6 +15,7 @@ use Foswiki::UI::Save;
 use Foswiki::Plugins::UpdateAttachmentsPlugin;
 use CGI;
 use File::Path qw(mkpath);
+use utf8;
 
 # Set up the test fixture
 sub set_up {
@@ -121,14 +122,13 @@ sub runREST {
     );
     $query->path_info("/UpdateAttachmentsPlugin/update");
 
-    my $session = Foswiki->new( $Foswiki::cfg{DefaultUserLogin}, $query );
+    my $session = Foswiki->new( $Foswiki::cfg{AdminUserLogin}, $query );
     my $text = "Ignore this text";
 
     # invoke the save handler
     my ( $resp, $result, $stdout, $stderr ) = $this->captureWithKey( rest => $this->getUIFn('rest'), $session );
 
     #print STDERR "$stderr\n";
-
     #print STDERR "RESPONSE:  $resp";
     return $resp;
 
@@ -172,6 +172,42 @@ attachments ignored : 0
 HERE
     $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
 }
+
+sub test_Utf8Attachment {
+    my $this = shift;
+
+    my $web = $this->{attach_web};
+
+    _writeTopic( $this, $web, 'AśčÁŠŤśěž', <<HERE );
+Topic Text
+HERE
+
+    _writeFile( $web, 'AśčÁŠŤśěž', 'AśčÁŠŤśěžFile');
+
+    # first run - attach one file.
+
+    my $resp = $this->runREST( 'WebHome' );
+
+    my $match = <<"HERE";
+attachments updated : 0
+attachments added   : 1
+attachments removed : 0
+attachments ignored : 0
+HERE
+
+    chomp $match;
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+
+    $resp = $this->runREST( 'WebHome' );
+    $match = <<"HERE";
+attachments updated : 0
+attachments added   : 0
+attachments removed : 0
+attachments ignored : 0
+HERE
+    $this->assert_matches( qr#.*$match.*#, $resp, "Unexpected output from initial attach" );
+}
+
 
 
 #

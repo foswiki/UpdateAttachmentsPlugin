@@ -11,10 +11,53 @@ use constant DRY => 0;
 use constant TRACE => 0;
 
 BEGIN {
-  if ($Foswiki::cfg{UseLocale}) {
-    require locale;
-    import locale();
-  }
+
+    # Import the locale for sorting
+    if ( $Foswiki::cfg{UseLocale} ) {
+        require locale;
+        import locale();
+    }
+
+ # Shamelessly copied from  Foswiki Store
+
+    if ($Foswiki::UNICODE) {
+        require Encode;
+
+        # Interface to file operations.
+
+        *_decode = \&Foswiki::Store::decode;
+
+        # readdir returns bytes
+        *_readdir = sub {
+            map { _decode($_) } readdir( $_[0] );
+        };
+
+        *_encode = \&Foswiki::Store::encode;
+
+        # The remaining file level functions work on wide chars,
+        # silently converting to utf-8. But we want to explicitly
+        # control the encoding in the {Store}{Encoding}!=undef case,
+        # so we have no choice but to override.
+        *_unlink = sub { unlink( _encode( $_[0] ) ); };
+        *_e      = sub { -e _encode( $_[0] ); };
+        *_f      = sub { -f _encode( $_[0] ); };
+        *_d      = sub { -d _encode( $_[0] ); };
+        *_r      = sub { -r _encode( $_[0] ); };
+        *_stat   = sub { stat( _encode( $_[0] ) ); };
+        *_utime  = sub { utime( $_[0], $_[1], _encode( $_[2] ) ); };
+    }
+    else {
+        *_decode = sub { };
+        *_encode = sub { };
+        *_unlink = \&unlink;
+        *_readdir = \&readdir;
+        *_e       = sub { -e $_[0] };
+        *_f       = sub { -f $_[0] };
+        *_d       = sub { -d $_[0] };
+        *_r       = sub { -r $_[0] };
+        *_stat    = \&stat;
+        *_utime   = \&utime;
+    }
 }
 
 sub new {
@@ -53,6 +96,7 @@ sub init {
   $this->{attachmentsRetained} = 0;
   $this->{attachmentsAdded} = 0;
   $this->{attachmentsUpdated} = 0;
+  $this->{changed} = 0;
   $this->{detailedReport} = undef;
 
   return $this;
@@ -148,7 +192,7 @@ sub updateAttachments {
   push @{$this->{detailedReport}}, "=== Processing $web.$topic";
   my @newAttachments = $this->getNewAttachmentsList($obj);
 
-  if (@newAttachments) {
+  if ($this->{changed}) {
     $obj->putAll('FILEATTACHMENT', @newAttachments);
     Foswiki::Func::saveTopic($web, $topic, $obj, $text, {
       comment => 'updated attachments',
@@ -166,7 +210,7 @@ sub getNewAttachmentsList {
 
   my %filesInPub = $this->getFilesInPub($obj);
   my %filesInMeta = map { $_->{name} => $_ } $obj->find('FILEATTACHMENT');
-  my $changed = 0;
+  $this->{changed} = 0;
 
   foreach my $file (keys %filesInPub) {
     my $validated = Foswiki::Sandbox::validateAttachmentName($file);
@@ -188,7 +232,7 @@ sub getNewAttachmentsList {
         $filesInPub{$file}{autoattached} = "1";
         $this->{attachmentsUpdated}++;
         push @{$this->{detailedReport}}, "updated $file";
-        $changed = 1;
+        $this->{changed} = 1;
       }
 
       # bring forward any missing yet wanted attribute
@@ -205,7 +249,7 @@ sub getNewAttachmentsList {
       $filesInPub{$file}{user} = $this->{attachAsUser} if $this->{attachAsUser};
       $this->{attachmentsAdded}++;
       push @{$this->{detailedReport}}, "added $file";
-      $changed = 1;
+      $this->{changed} = 1;
     }
   }
 
@@ -222,16 +266,16 @@ sub getNewAttachmentsList {
     if ($this->{removeMissing}) {
       $this->{attachmentsRemoved}++;
       push @{$this->{detailedReport}}, "removed $file";
-      $changed = 1;
+      $this->{changed} = 1;
     } else {
       $filesInPub{$file} = $filesInMeta{$file};
       $this->{attachmentsRetained}++;
       push @{$this->{detailedReport}}, "retaining missing attachment $file";
-      $changed = 1;
+      $this->{changed} = 1;
     }
   }
 
-  return unless $changed;
+  return () unless $this->{changed};
 
   return values(%filesInPub);
 }
@@ -244,13 +288,13 @@ sub getFilesInPub {
 
   opendir($dh, $dir) || return ();
   my @files =
-    grep { !/$this->{attachFilter}/ && !/,v$/ && -f "$dir/$_" } readdir($dh);
+    grep { !/$this->{attachFilter}/ && !/,v$/ && _f "$dir/$_" } _readdir($dh);
   closedir($dh);
 
   my %fileStats = ();
   foreach my $file (@files) {
 
-    my @stat = stat($dir . "/" . $file);
+    my @stat = _stat($dir . "/" . $file);
     next unless @stat;
 
     $fileStats{$file} = {

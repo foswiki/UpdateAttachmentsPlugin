@@ -5,8 +5,8 @@ use warnings;
 use Foswiki::Plugins ();
 use Foswiki::Func ();
 
-our $VERSION = '3.10';
-our $RELEASE = '3.10';
+our $VERSION = '3.11';
+our $RELEASE = '3.11';
 our $SHORTDESCRIPTION = 'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
@@ -37,7 +37,8 @@ sub initPlugin {
   );
 
   #force autoattach off
-  $Foswiki::cfg{AutoAttachPubFiles} = 0;
+  $Foswiki::cfg{AutoAttachPubFiles} = 0;           # Foswiki 1.x
+  $Foswiki::cfg{RCS}{AutoAttachPubFiles} = 0;      # Foswiki 2.x
 
   return 1;
 }
@@ -48,7 +49,7 @@ Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
 Copyright (C) 2007-2012 SvenDowideit@fosiki.com
 
-Copyright (C) 2010 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2010-2015 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 
