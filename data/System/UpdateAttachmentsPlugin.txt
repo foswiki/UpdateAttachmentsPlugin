@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1437362660" format="1.1" version="1.2"}%
+%META:TOPICINFO{author="ProjectContributor" date="1437440032" format="1.1" version="1"}%
 <img src="%PUBURL%/%WEB%/%TOPIC%/wikiring-attach.png" style="float:right;margin:0 0 1em 1em" />
 ---+!! %TOPIC%
 %SHORTDESCRIPTION%
@@ -62,6 +62,7 @@ Other parameters to the REST handler are:
           <li> =preferences=: reads a list of topics from the =UPDATEATTACHMENTS= preference variable </li> \
           </ul> | =web= |
 | =list= | a comma separated list of topics to be inspected; this sets the =mode= to =topics= automatically | |
+| =hide= | Specify if the "hidden" attribute should be assigned for new attachments.  (Status of existing attachments is not changed). |
 
 ---++ Settings
 
@@ -72,6 +73,8 @@ Attachments Plugin section of [[%SCRIPTURL{configure}%][configure]].
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing}= - will remove attachment references in a topic that no longer exist
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{Debug}= - to see what topics are updated (edit LocalSite.cfg by hand to add this setting).
    * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter}= - Regular expression that filters common files that should never be attached to a topic.
+   * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{HideAttachments}= - Boolean default for the hide attribute on new attachments.
+   * =$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachmentComment}= - String that is set as a comment for each new attachment.
 
 It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}= (Foswiki 1.x) or =$Foswiki::cfg{RCS}{AutoAttachPubFiles}= (Foswiki 2.x). The plugin will do so automatically if enabled.
 
@@ -90,6 +93,8 @@ It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}= (Foswi
 | Plugin Version: | %$VERSION% |
 | Plugin Release: | %$RELEASE% |
 | Change History: | <!-- versions below in reverse order -->&nbsp; |
+| 3.12:   | Foswikitask:Item13543: Configure options for hide attachments, and attachment comment. Fix several other minor bugs. |
+| 3.11:   | Foswikitask:Item13540: Update for utf-8 UNICODDE core. Fix several minor bugs. |
 | 3.10:   | Foswikitask:Item13001: fully specify rest security |
 | 3.01:   | Foswikitask:Item12839: require authentication when calling the REST handler |
 | 3.00:   | Foswikitask:Item12891: general code cleanup; added modes to update individual topics (Foswiki:Main.MichaelDaum); \
@@ -105,5 +110,5 @@ It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}= (Foswi
 | Plugin Home: | http://foswiki.org/Extensions/UpdateAttachmentsPlugin |
 
 
-%META:FILEATTACHMENT{name="wikiring-attach.png" attr="h" comment="" user="ProjectContributor" date="1437362660" size="34351" version="1"}%
-%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" user="ProjectContributor" date="1437362660" size="1343" version="1"}%
+%META:FILEATTACHMENT{name="wikiring-attach.png" attr="h" comment="" user="ProjectContributor" date="1437440032" size="34351" version="1"}%
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" user="ProjectContributor" date="1437440032" size="1343" version="1"}%

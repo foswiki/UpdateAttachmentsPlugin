@@ -5,8 +5,8 @@ use warnings;
 use Foswiki::Plugins ();
 use Foswiki::Func ();
 
-our $VERSION = '3.11';
-our $RELEASE = '3.11';
+our $VERSION = '3.12';
+our $RELEASE = '3.12';
 our $SHORTDESCRIPTION = 'A batched alternative to AutoAttachments (adds and removes attachements)';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;

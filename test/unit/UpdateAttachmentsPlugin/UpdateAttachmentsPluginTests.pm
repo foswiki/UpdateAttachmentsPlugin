@@ -34,6 +34,8 @@ sub set_up {
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = 1;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission} = 1;
     $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachFilter} = '^(\\.htaccess|\\.htpasswd|\\.htgroup|_.*)$';
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{HideAttachments} = 1;
+    $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachmentComment} = 'Fibble Foobar';
 
     $this->{tmpdatafile8}  = $Foswiki::cfg{TempfileDir} . '/eight.bytes';
     $this->{tmpdatafile16}  = $Foswiki::cfg{TempfileDir} . '/sixteen.bytes';

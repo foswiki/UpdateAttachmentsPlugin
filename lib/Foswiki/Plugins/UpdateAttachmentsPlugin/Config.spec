@@ -1,7 +1,7 @@
 #---+ Extensions
 #---++ Update Attachments Plugin
 
-# **STRING CHECK='emptyok'**
+# **STRING**
 # To attribute attachments to a known user, set this to their WikiName. This user should exist,
 # and be mappable to a login.  If not set, the default UnknownUser will be used.
 # Note that the rest handler always runs under the current authenticated user.  This attribute is
@@ -11,6 +11,17 @@ $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser} = '';
 # **BOOLEAN**
 # Remove references to attachments that no longer exist in pub.
 $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing} = $TRUE;
+
+# **BOOLEAN**
+# Hide auto-attached files in the attachment table. Note, this applies to new attachments.
+# Existing attachments will preserve the current hidden attribute.  Can be overridden
+# from rest handler using the hide= parameter.
+$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{HideAttachments} = $TRUE;
+
+# **STRING CHECK='emptyok'**
+# Comment applied to auto-attached files.  Note that existing comments are preserved.
+# This only effects new attachments. Set to empty to not add comments to attachments
+$Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachmentComment} = 'Attached by UpdateAttachmentsPlugin';
 
 # **BOOLEAN**
 # Enable debugging messages - printed to STDERR (Apache error_log file)

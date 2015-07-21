@@ -69,6 +69,8 @@ sub new {
       checkUpdateAttachPermission => $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{CheckUPDATEATACHPermission} || 0,
       attachAsUser => $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachAsUser},
       removeMissing => $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{RemoveMissing},
+      hideAttachments => $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{HideAttachments},
+      attachmentComment => $Foswiki::cfg{Plugins}{UpdateAttachmentsPlugin}{AttachmentComment},
       @_
     },
     $class
@@ -80,8 +82,10 @@ sub new {
   $this->{removeMissing} = 1
     unless defined $this->{removeMissing};
 
-  $this->{attachAsUser} = Foswiki::Func::getCanonicalUserID($this->{attachAsUser})
-    if $this->{attachAsUser};
+  $this->{attachAsUser} ||= 'UnknownUser';
+  $this->{attachAsUser} = Foswiki::Func::getCanonicalUserID($this->{attachAsUser});
+
+  $this->{attachmentComment} = 'Attached by UpdateAttachmentsPlugin' unless defined $this->{attachmentComment};
 
   return $this;
 }
@@ -111,6 +115,9 @@ sub restUpdate {
 
   my $mode = $request->param("mode") || 'web';
   my $topicNames = $request->param("list");
+
+  my $hide = $request->param("hide");
+  $this->{hideAttachments} = Foswiki::Func::isTrue( $hide ) if defined $hide;
 
   $mode = 'topics' if $topicNames;
 
@@ -190,6 +197,7 @@ sub updateAttachments {
   }
 
   push @{$this->{detailedReport}}, "=== Processing $web.$topic";
+  push @{$this->{detailedReport}}, " .. New attachments will " . ( ($this->{hideAttachments}) ? 'be ' : 'not be ' ) . 'hidden';
   my @newAttachments = $this->getNewAttachmentsList($obj);
 
   if ($this->{changed}) {
@@ -230,23 +238,31 @@ sub getNewAttachmentsList {
       {
         # found changed pub file
         $filesInPub{$file}{autoattached} = "1";
+        $filesInPub{$file}{user} = $this->{attachAsUser} if $this->{attachAsUser};
+        $filesInPub{$file}{version} = ( $filesInPub{$file}{version} ) ? $filesInPub{$file}{version}++ : 1;
+
         $this->{attachmentsUpdated}++;
         push @{$this->{detailedReport}}, "updated $file";
         $this->{changed} = 1;
       }
 
       # bring forward any missing yet wanted attribute
-      foreach my $field (qw(comment attr user version autoattached)) {
+      foreach my $field (qw(comment attr)) {
         if ($filesInMeta{$file}{$field}) {
           $filesInPub{$file}{$field} =
             $filesInMeta{$file}{$field};
         }
       }
+
     } else {
 
       # new pub file found
+      $filesInPub{$file}{attr} = 'h' if $this->{hideAttachments};
       $filesInPub{$file}{autoattached} = "1";
+      $filesInPub{$file}{comment} = $this->{AttachmentComment};
       $filesInPub{$file}{user} = $this->{attachAsUser} if $this->{attachAsUser};
+      $filesInPub{$file}{version} = 1;
+
       $this->{attachmentsAdded}++;
       push @{$this->{detailedReport}}, "added $file";
       $this->{changed} = 1;
