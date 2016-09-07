@@ -47,16 +47,16 @@ BEGIN {
         *_utime  = sub { utime( $_[0], $_[1], _encode( $_[2] ) ); };
     }
     else {
-        *_decode = sub { };
-        *_encode = sub { };
-        *_unlink = \&unlink;
-        *_readdir = \&readdir;
+        *_decode = sub { return shift; };
+        *_encode = sub { return shift; };
+        *_unlink = sub { unlink( $_[0] ); };
+        *_readdir = sub { readdir( $_[0] ); };
         *_e       = sub { -e $_[0] };
         *_f       = sub { -f $_[0] };
         *_d       = sub { -d $_[0] };
         *_r       = sub { -r $_[0] };
-        *_stat    = \&stat;
-        *_utime   = \&utime;
+        *_stat    = sub { stat( $_[0] ); };
+        *_utime   = sub { utime( $_[0], $_[1], $_[2] ); };
     }
 }
 
@@ -233,7 +233,8 @@ sub getNewAttachmentsList {
     # check pub file in current meta
     if ($filesInMeta{$file}) {
 
-      if ( $filesInMeta{$file}{size} ne $filesInPub{$file}{size}
+      if ( !defined $filesInMeta{$file}{size} || !defined $filesInMeta{$file}{date}
+        || $filesInMeta{$file}{size} ne $filesInPub{$file}{size}
         || $filesInMeta{$file}{date} ne $filesInPub{$file}{date})
       {
         # found changed pub file
@@ -333,7 +334,7 @@ Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
 Copyright (C) 2007-2012 SvenDowideit@fosiki.com
 
-Copyright (C) 2010-2014 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2010-2016 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 

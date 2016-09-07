@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1437440032" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1473264104" format="1.1" version="1"}%
 <img src="%PUBURL%/%WEB%/%TOPIC%/wikiring-attach.png" style="float:right;margin:0 0 1em 1em" />
 ---+!! %TOPIC%
 %SHORTDESCRIPTION%
@@ -88,13 +88,14 @@ It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}= (Foswi
 | Author(s): | Foswiki:Main.SvenDowideit - http://fosiki.com a %PUBURL%/%WEB%/%TOPIC%/wikiringlogo20x20.png [[http://WikiRing.com][WikiRing]] founding partner %BR%\
                       Foswiki:Main.GeorgeClark - revised for Foswiki 1.1 %BR% \
                       Foswiki:Main.MichaelDaum - rewrite and general code cleanup |
-| Copyright: | &copy; 2008-2012 SvenDowideit@fosiki.com, &copy; 2010-2015 Foswiki Contributors |
+| Copyright: | &copy; 2008-2012 SvenDowideit@fosiki.com, &copy; 2010-2016 Foswiki Contributors |
 | License: | [[http://www.gnu.org/licenses/gpl.html][GPL 3 (Gnu General Public License)]] |
 | Plugin Version: | %$VERSION% |
 | Plugin Release: | %$RELEASE% |
 | Change History: | <!-- versions below in reverse order -->&nbsp; |
+| 3.13:   | Foswikitask:Item14178: Bogus method of aliasing core functions,  crashes on Foswiki 1.x. |
 | 3.12:   | Foswikitask:Item13543: Configure options for hide attachments, and attachment comment. Fix several other minor bugs. |
-| 3.11:   | Foswikitask:Item13540: Update for utf-8 UNICODDE core. Fix several minor bugs. |
+| 3.11:   | Foswikitask:Item13540: Update for utf-8 UNICODE core. Fix several minor bugs. |
 | 3.10:   | Foswikitask:Item13001: fully specify rest security |
 | 3.01:   | Foswikitask:Item12839: require authentication when calling the REST handler |
 | 3.00:   | Foswikitask:Item12891: general code cleanup; added modes to update individual topics (Foswiki:Main.MichaelDaum); \
@@ -110,5 +111,5 @@ It is strongly recommended to disable =$Foswiki::cfg{AutoAttachPubFiles}= (Foswi
 | Plugin Home: | http://foswiki.org/Extensions/UpdateAttachmentsPlugin |
 
 
-%META:FILEATTACHMENT{name="wikiring-attach.png" attr="h" comment="" user="ProjectContributor" date="1437440032" size="34351" version="1"}%
-%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" user="ProjectContributor" date="1437440032" size="1343" version="1"}%
+%META:FILEATTACHMENT{name="wikiring-attach.png" attr="h" comment="" user="ProjectContributor" date="1473264104" size="34351" version="1"}%
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" user="ProjectContributor" date="1473264104" size="1343" version="1"}%
