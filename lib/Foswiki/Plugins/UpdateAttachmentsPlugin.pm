@@ -3,44 +3,47 @@ use strict;
 use warnings;
 
 use Foswiki::Plugins ();
-use Foswiki::Func ();
+use Foswiki::Func    ();
 
 our $VERSION = '3.13';
 our $RELEASE = '3.13';
-our $SHORTDESCRIPTION = 'A batched alternative to Auto Attachments (adds and removes attachements).';
+our $SHORTDESCRIPTION =
+  'A batched alternative to Auto Attachments (adds and removes attachements).';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
 
 sub core {
 
-  unless (defined $core) {
-    require Foswiki::Plugins::UpdateAttachmentsPlugin::Core;
-    $core = Foswiki::Plugins::UpdateAttachmentsPlugin::Core->new();
-  }
+    unless ( defined $core ) {
+        require Foswiki::Plugins::UpdateAttachmentsPlugin::Core;
+        $core = Foswiki::Plugins::UpdateAttachmentsPlugin::Core->new();
+    }
 
-  return $core;
+    return $core;
 }
 
 sub initPlugin {
-  my ($topic, $web, $user, $installWeb) = @_;
+    my ( $topic, $web, $user, $installWeb ) = @_;
 
-  # check for Plugins.pm versions
-  if ($Foswiki::Plugins::VERSION < 2.1) {
-    Foswiki::Func::writeWarning("Version mismatch between UpdateAttachmentsPlugin  and Plugins.pm");
-    return 0;
-  }
+    # check for Plugins.pm versions
+    if ( $Foswiki::Plugins::VERSION < 2.1 ) {
+        Foswiki::Func::writeWarning(
+            "Version mismatch between UpdateAttachmentsPlugin  and Plugins.pm");
+        return 0;
+    }
 
-  Foswiki::Func::registerRESTHandler('update', sub { core->restUpdate(@_) }, 
-    authenticate => 1,
-    validate => 0,
-    http_allow => 'GET,POST',
-  );
+    Foswiki::Func::registerRESTHandler(
+        'update', sub { core->restUpdate(@_) },
+        authenticate => 1,
+        validate     => 0,
+        http_allow   => 'GET,POST',
+    );
 
-  #force autoattach off
-  $Foswiki::cfg{AutoAttachPubFiles} = 0;           # Foswiki 1.x
-  $Foswiki::cfg{RCS}{AutoAttachPubFiles} = 0;      # Foswiki 2.x
+    #force autoattach off
+    $Foswiki::cfg{AutoAttachPubFiles} = 0;         # Foswiki 1.x
+    $Foswiki::cfg{RCS}{AutoAttachPubFiles} = 0;    # Foswiki 2.x
 
-  return 1;
+    return 1;
 }
 
 1;
